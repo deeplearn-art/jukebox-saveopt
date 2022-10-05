@@ -15,6 +15,8 @@ from jukebox.utils.dist_utils import print_once
 from jukebox.utils.logger import ctqdm
 import fire
 
+#  print(f"  { }")
+
 def get_logdir(hps, level):
     if dist.get_world_size() > 1:
         logdir = f"{hps.name}_rank_{dist.get_rank()}/level_{level}"
@@ -198,6 +200,8 @@ def sample_level(zs, labels, sampling_kwargs, level, prior, total_length, hop_le
 
 # Sample multiple levels
 def _sample(zs, labels, sampling_kwargs, priors, sample_levels, hps, device='cuda'):
+    print("in sample._sample")
+    print(f"hps {hps}")
     alignments = None
     for level in reversed(sample_levels):
         prior = priors[level]
@@ -218,11 +222,16 @@ def _sample(zs, labels, sampling_kwargs, priors, sample_levels, hps, device='cud
                 if remainder != 0:
                     hop_length += prior.cond_downsample - remainder
 
+        print(f"hop_length {hop_length}")
+        print(f"total_length {total_length}")
+        print(f"level {level}")
+        print(f"sampling_kwargs[level] {sampling_kwargs[level]}")
         logdir = get_logdir(hps, level)
-
+        
         zs = sample_level(zs, labels[level], sampling_kwargs[level], level, prior, total_length, hop_length, hps)
 
         empty_cache()
+        print(f" zs[level].shape { zs[level].shape}")
         # Decode sample
         x = prior.decode(zs[level:], start_level=level, bs_chunks=zs[level].shape[0])
 
