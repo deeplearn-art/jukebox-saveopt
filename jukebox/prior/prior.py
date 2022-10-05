@@ -236,7 +236,8 @@ class SimplePrior(nn.Module):
         print(f" start_level {start_level }")
         print(f" bs_chunks {bs_chunks }")
         print(f" type(zs[-1]) { type(zs[-1])}")
-        assert len(zs) == end_level - end_level
+        
+        assert len(zs) == end_level - start_level
         with t.no_grad():
             x_out = self.decoder(zs, start_level=start_level, end_level=end_level, bs_chunks=bs_chunks)
         return x_out
