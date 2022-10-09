@@ -29,6 +29,8 @@ def get_logdir(hps, level):
 # Sample a partial window of length<n_ctx with tokens_to_sample new tokens on level=level
 def sample_partial_window(zs, labels, sampling_kwargs, level, prior, tokens_to_sample, hps, combined_progress=False, autosave=True, prob_func=None):
     z = zs[level]
+    print("in: sample_partial_window")
+    print(f" z: {z}")
     n_ctx = prior.n_ctx
     current_tokens = z.shape[1]
     if current_tokens < n_ctx - tokens_to_sample:
@@ -37,12 +39,15 @@ def sample_partial_window(zs, labels, sampling_kwargs, level, prior, tokens_to_s
     else:
         sampling_kwargs['sample_tokens'] = n_ctx
         start = current_tokens - n_ctx + tokens_to_sample
+    
+    print(f" current_tokens, start, sampling_kwargs['sample_tokens']: {current_tokens, start, sampling_kwargs['sample_tokens']}")    
 
     return sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, combined_progress=combined_progress, autosave=autosave, prob_func=prob_func)
 
 # Sample a single window of length=n_ctx at position=start on level=level
 def sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, combined_progress=False, autosave=True, prob_func=None):
     logdir = get_logdir(hps, level)
+    print("In sample_single_window")
     if autosave:
         try:
             zs = t.load(f"{logdir}/data.pth.tar")['zs']
@@ -55,7 +60,7 @@ def sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, 
     zs = [z.to('cpu') for z in zs] # force tokens back onto ram if the notebook did an oopsie
     # get z already sampled at current level
     z = zs[level][:,start:end].to('cuda')
-
+    print(f" z: {z}")
     if 'sample_tokens' in sampling_kwargs:
         # Support sampling a window shorter than n_ctx
         sample_tokens = sampling_kwargs['sample_tokens']
@@ -93,7 +98,7 @@ def sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, 
         z_samples_i = prior.sample(n_samples=z_i.shape[0], z=z_i, z_conds=z_conds_i, y=y_i, combined_progress=combined_progress, prob_func=prob_func, **sampling_kwargs)
         z_samples.append(z_samples_i.to('cpu'))
     z = t.cat(z_samples, dim=0)
-
+    print(f" z after prior sample: {z}")
     sampling_kwargs['max_batch_size'] = max_batch_size
 
     # Update z with new sample
@@ -102,6 +107,7 @@ def sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, 
     if autosave:
         t.save(dict(zs=zs, labels=None, sampling_kwargs=None, x=None), f"{logdir}/data.pth.tar")
         print_once('progress saved')
+    print(f" zs[2] before return: {zs[2]}")
     return zs
 # Sample total_length tokens at level=level with hop_length=hop_length
 def sample_level(zs, labels, sampling_kwargs, level, prior, total_length, hop_length, hps, prob_func=None):
