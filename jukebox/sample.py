@@ -104,9 +104,9 @@ def sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, 
     # Update z with new sample
     z_new = z[:,-new_tokens:]
     zs[level] = t.cat([zs[level], z_new], dim=1)
-    if autosave:
-        t.save(dict(zs=zs, labels=None, sampling_kwargs=None, x=None), f"{logdir}/data.pth.tar")
-        print_once('progress saved')
+    
+    t.save(dict(zs=zs, labels=None, sampling_kwargs=None, x=None), f"{logdir}/data.pth.tar")
+    print_once('progress saved')
     print(f" zs[2] before return: {zs[2]}")
     return zs
 # Sample total_length tokens at level=level with hop_length=hop_length
