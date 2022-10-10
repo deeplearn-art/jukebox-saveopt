@@ -27,7 +27,7 @@ def get_logdir(hps, level):
     return logdir
 
 # Sample a partial window of length<n_ctx with tokens_to_sample new tokens on level=level
-def sample_partial_window(zs, labels, sampling_kwargs, level, prior, tokens_to_sample, hps, combined_progress=False, autosave=True, prob_func=None):
+def sample_partial_window(zs, labels, sampling_kwargs, level, prior, tokens_to_sample, hps, combined_progress=False, autosave=False, prob_func=None):
     z = zs[level]
     print("in: sample_partial_window")
     print(f" z: {z}")
