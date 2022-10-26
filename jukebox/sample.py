@@ -40,7 +40,7 @@ def sample_partial_window(zs, labels, sampling_kwargs, level, prior, tokens_to_s
         sampling_kwargs['sample_tokens'] = n_ctx
         start = current_tokens - n_ctx + tokens_to_sample
     
-    print(f" current_tokens, start, sampling_kwargs['sample_tokens']: {current_tokens, start, sampling_kwargs['sample_tokens']}")    
+    print(f" n_ctx,current_tokens, start, sampling_kwargs['sample_tokens']: {n_ctx,current_tokens, start, sampling_kwargs['sample_tokens']}")    
 
     return sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, combined_progress=combined_progress, autosave=autosave, prob_func=prob_func)
 
@@ -57,6 +57,9 @@ def sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, 
     n_samples = hps.n_samples
     n_ctx = prior.n_ctx
     end = start + n_ctx
+    print(f"n_samples: {n_samples}")
+    print(f"start: {start}")
+    print(f"end: {end}")
     zs = [z.to('cpu') for z in zs] # force tokens back onto ram if the notebook did an oopsie
     # get z already sampled at current level
     z = zs[level][:,start:end].to('cuda')
@@ -66,8 +69,11 @@ def sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, 
         sample_tokens = sampling_kwargs['sample_tokens']
     else:
         sample_tokens = (end - start)
+    print(f"sample_tokens: {sampling_kwargs['sample_tokens']}")    
     conditioning_tokens, new_tokens = z.shape[1], sample_tokens - z.shape[1]
-
+    print(f"conditioning_tokens: {conditioning_tokens}")
+    print(f"new_tokens: {new_tokens}")    
+   
     print_once(f"Sampling {sample_tokens} tokens for [{start},{start+sample_tokens}]. Conditioning on {conditioning_tokens} tokens")
 
     if new_tokens <= 0:
