@@ -182,13 +182,13 @@ def sample_level(zs, labels, sampling_kwargs, level, prior, total_length, hop_le
                 
                 zs = sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, prob_func=prob_func)
                 
-                if cnt % 10 == 0:
-                    print()
-                    x = prior.decode(zs[level:], start_level=level, bs_chunks=zs[level].shape[0])
-                    save_wav(logdir, x, hps.sr)
-                    print('WAV written to disk')
-                    del x
-                    t.cuda.empty_cache()
+       
+                print()
+                x = prior.decode(zs[level:], start_level=level, bs_chunks=zs[level].shape[0])
+                save_wav(logdir, x, hps.sr)
+                print('WAV written to disk')
+                del x
+                t.cuda.empty_cache()
                 cnt += 1
                 print()
     else:
