@@ -42,11 +42,13 @@ def sample_partial_window(zs, labels, sampling_kwargs, level, prior, tokens_to_s
 def sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, combined_progress=False, autosave=True, prob_func=None):
     logdir = get_logdir(hps, level)
     
-    # if autosave:
-    #     try:
-    #         zs = t.load(f"{logdir}/data.pth.tar")['zs']
-    #         print_once('progress loaded')
-    #     except Exception: pass
+    if level < 2:
+      try:
+        zs = t.load(f"{logdir}/data.pth.tar")['zs']
+        print_once('progress loaded')
+      except Exception as e: 
+          print(f"Exception {e}")
+        
     
     n_samples = hps.n_samples
     n_ctx = prior.n_ctx
@@ -98,7 +100,7 @@ def sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, 
     # Update z with new sample
     z_new = z[:,-new_tokens:]
     zs[level] = t.cat([zs[level], z_new], dim=1)
-    if autosave:
+    if level < 2:
         t.save(dict(zs=zs, labels=None, sampling_kwargs=None, x=None), f"{logdir}/data.pth.tar")
         print_once('progress saved')
     return zs
@@ -116,12 +118,13 @@ def sample_level(zs, labels, sampling_kwargs, level, prior, total_length, hop_le
     logdir = get_logdir(hps, level)
     if total_length >= prior.n_ctx:
         if speed_sampling:
-            # do autosave manually
+            # we only speed sample when in upsampling stage
             try:
                 zs = t.load(f"{logdir}/data.pth.tar")['zs']
                 print_once('progress loaded')
-            except Exception: pass
-
+            except Exception as e: 
+                print(f"Exception {e}")
+                
             assert prior.n_ctx % hps.hop_fraction[level] == 0, 'context length needs to be divisible by hop_fraction'
             
             speed_hop_length = hop_length // hps.hop_fraction[level]
@@ -166,12 +169,12 @@ def sample_level(zs, labels, sampling_kwargs, level, prior, total_length, hop_le
                 zs[level] = t.cat([zs[level], zz[level]], dim=1)
                 zs[level] = zs[level][:, :hps.sample_length // prior.raw_to_tokens]
 
-                # do autosave manually
-                t.save(dict(zs=zs, labels=None, sampling_kwargs=None, x=None), f"{logdir}/data.pth.tar")
-                print('progress saved')
+                if level < 2:
+                  t.save(dict(zs=zs, labels=None, sampling_kwargs=None, x=None), f"{logdir}/data.pth.tar")
+                print('sample_level: progress saved')
                 x = prior.decode(zs[level:], start_level=level, bs_chunks=zs[level].shape[0])
                 save_wav(logdir, x, hps.sr)
-                print('WAV written to disk')
+                print('sample_level: WAV written to disk')
                 del x
                 t.cuda.empty_cache()
                 cnt += 1
