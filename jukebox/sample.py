@@ -168,14 +168,12 @@ def sample_level(zs, labels, sampling_kwargs, level, prior, total_length, hop_le
 
                 # do autosave manually
                 t.save(dict(zs=zs, labels=None, sampling_kwargs=None, x=None), f"{logdir}/data.pth.tar")
-                print_once('progress saved')
-
-                if cnt % 10 == 0:
-                    x = prior.decode(zs[level:], start_level=level, bs_chunks=zs[level].shape[0])
-                    save_wav(logdir, x, hps.sr)
-                    print('WAV written to disk')
-                    del x
-                    t.cuda.empty_cache()
+                print('progress saved')
+                x = prior.decode(zs[level:], start_level=level, bs_chunks=zs[level].shape[0])
+                save_wav(logdir, x, hps.sr)
+                print('WAV written to disk')
+                del x
+                t.cuda.empty_cache()
                 cnt += 1
                 print()
         else:
