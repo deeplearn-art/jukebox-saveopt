@@ -47,7 +47,7 @@ def sample_single_window(zs, labels, sampling_kwargs, level, prior, start, hps, 
         zs = t.load(f"{logdir}/data.pth.tar")['zs']
         print_once('progress loaded')
       except Exception as e: 
-          print(f"Exception {e}")
+          print(f"Skip {logdir}")
         
     
     n_samples = hps.n_samples
@@ -123,7 +123,7 @@ def sample_level(zs, labels, sampling_kwargs, level, prior, total_length, hop_le
                 zs = t.load(f"{logdir}/data.pth.tar")['zs']
                 print_once('progress loaded')
             except Exception as e: 
-                print(f"Exception {e}")
+                print(f"Skipping {logdir}")
                 
             assert prior.n_ctx % hps.hop_fraction[level] == 0, 'context length needs to be divisible by hop_fraction'
             
